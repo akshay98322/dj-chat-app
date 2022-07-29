@@ -16,21 +16,16 @@
     <input type="text" id="chat-message-input" size="100"> <br>
     <input type="button" value="send" id="chat-message-submit">
     {{groupname|json_script:"group-name"}}
-
-
     <script>
         const groupName = JSON.parse(document.getElementById("group-name").textContent);
-        // var ws = new WebSocket("ws://127.0.0.1:8000/ws/sc/");
-        var ws = new WebSocket("ws://" + window.location.host + "/ws/ac/" + groupName + "/");
+        var ws = new WebSocket("ws://" + window.location.host + "/ws/awsc/" + groupName + "/");
 
         ws.onopen = function(event) {
             console.log("Connected to server");
-            // ws.send("Hello, I am client")
         };
         ws.onmessage = function(event) {
             const data = JSON.parse(event.data)
-            // console.log(data);
-            document.querySelector('#chat-log').value += data.user + ": " + data.msg + '\n'
+            document.querySelector('#chat-log').value += data.msg + '\n'
 
         };
         ws.onclose = function(event) {
