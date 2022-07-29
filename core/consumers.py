@@ -18,14 +18,19 @@ class MyWebsocketConsumer(WebsocketConsumer):
         data = json.loads(text_data)
         # find the group
         group = Group.objects.get(name=self.group_name)
-        # save chat
-        message = data['msg']
-        chat = Chat.objects.create(content=message, group=group)
-        async_to_sync(self.channel_layer.group_send)(self.group_name, {
-                'type': 'chat.message',
-                'message': message
-            })        
-        print("received", text_data)
+        if self.scope['user'].is_authenticated:
+            # save chat
+            message = data['msg']
+            chat = Chat.objects.create(content=message, group=group)
+            async_to_sync(self.channel_layer.group_send)(self.group_name, {
+                    'type': 'chat.message',
+                    'message': message
+                })        
+        else:
+            self.send(text_data=json.dumps({
+            'msg':'You are not authenticated.'
+            }))
+            raise StopConsumer()
 
     # handeller function
     def chat_message(self, event):
@@ -51,18 +56,23 @@ class MyAsyncWebsocketConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         # find the group
         group = await database_sync_to_async(Group.objects.get)(name=self.group_name)
-        message = data['msg']
-        # create a chat
-        chat = await database_sync_to_async(Chat.objects.create)(content=message, group=group)
-        await self.channel_layer.group_send(self.group_name, {
-                'type': 'chat.message',
-                'message': message
-            })        
-        print("received", text_data)
+        if self.scope['user'].is_authenticated:
+            message = data['msg']
+            # create a chat
+            chat = await database_sync_to_async(Chat.objects.create)(content=message, group=group)
+            await self.channel_layer.group_send(self.group_name, {
+                    'type': 'chat.message',
+                    'message': message
+                })        
+        else:
+            await self.send(text_data=json.dumps({
+                'msg':'You are not authenticated.'
+            }))
+            raise StopConsumer()
 
     # handeller function
     async def chat_message(self, event):
-        await self.send( text_data=json.dumps({
+        await self.send(text_data=json.dumps({
             'msg': event['message']
         }))
         

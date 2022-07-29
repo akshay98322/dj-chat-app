@@ -18,8 +18,8 @@
     {{groupname|json_script:"group-name"}}
     <script>
         const groupName = JSON.parse(document.getElementById("group-name").textContent);
-        // var ws = new WebSocket("ws://" + window.location.host + "/ws/awsc/" + groupName + "/");
-        var ws = new WebSocket("ws://" + window.location.host + "/ws/wsc/" + groupName + "/");
+        // var ws = new WebSocket("ws://" + window.location.host + "/ws/wsc/" + groupName + "/");
+        var ws = new WebSocket("ws://" + window.location.host + "/ws/awsc/" + groupName + "/");
 
         ws.onopen = function(event) {
             console.log("Connected to server");
