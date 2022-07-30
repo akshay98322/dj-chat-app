@@ -25,9 +25,9 @@
             console.log("Connected to server");
         };
         ws.onmessage = function(event) {
-            const data = JSON.parse(event.data)
-            document.querySelector('#chat-log').value += data.msg + '\n'
-
+            const data = JSON.parse(event.data);
+            console.log(data.msg)
+            document.querySelector('#chat-log').value += data.user + ": " + data.msg + '\n'
         };
         ws.onclose = function(event) {
             console.log("Disconnected from server");
