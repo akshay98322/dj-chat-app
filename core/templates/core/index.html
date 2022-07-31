@@ -44,9 +44,14 @@
     {{groupname|json_script:"group-name"}}
     <script>
         const groupName = JSON.parse(document.getElementById("group-name").textContent);
+
+        // socket connection
+        var ws = new WebSocket("ws://" + window.location.host + "/ws/sc/" + groupName + "/");
+        // var ws = new WebSocket("ws://" + window.location.host + "/ws/ac/" + groupName + "/");
+
         // web socket connection
         // var ws = new WebSocket("ws://" + window.location.host + "/ws/wsc/" + groupName + "/");
-        var ws = new WebSocket("ws://" + window.location.host + "/ws/awsc/" + groupName + "/");
+        // var ws = new WebSocket("ws://" + window.location.host + "/ws/awsc/" + groupName + "/");
 
         // json socket connection
         // var ws = new WebSocket("ws://" + window.location.host + "/ws/jwc/" + groupName + "/");

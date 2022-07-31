@@ -1,14 +1,107 @@
+import json
+from asgiref.sync import async_to_sync
+
 from channels.generic.websocket import \
             (WebsocketConsumer, 
             AsyncWebsocketConsumer, 
             JsonWebsocketConsumer, 
             AsyncJsonWebsocketConsumer )
 from channels.exceptions import StopConsumer
-from asgiref.sync import async_to_sync
-import json
-from .models import Group, Chat
 from channels.db import database_sync_to_async
+from channels.consumer import SyncConsumer, AsyncConsumer
+
 from django.contrib.auth.models import User
+
+from .models import Group, Chat
+
+
+
+# Sync Consumer 
+class MySyncConsumer(SyncConsumer):
+    def websocket_connect(self, event):
+        print("WS connected...")
+        self.group_name = self.scope['url_route']['kwargs']['gname']
+        async_to_sync(self.channel_layer.group_add)(self.group_name, self.channel_name)
+        self.send({
+            'type': 'websocket.accept',
+        })
+
+    def websocket_receive(self, event):
+        if self.scope['user'].is_authenticated:
+            data = json.loads(event['text'])
+            # find the group
+            group = Group.objects.get(name=self.group_name)
+            # get user
+            u_name = self.scope['user'].username
+            user_obj = User.objects.get(username=u_name)
+            # save chat
+            message = data['msg']
+            chat = Chat.objects.create(content=message, group=group, user=user_obj)
+            data['user'] = u_name
+            async_to_sync(self.channel_layer.group_send)(self.group_name, {
+                'type': 'chat.message',
+                'message': json.dumps(data)
+            })
+        else:
+            self.send({
+                'type': 'websocket.send',
+                'text': json.dumps({'msg':'You are not authenticated.', 'user':'Anonymous'})
+            })
+            raise StopConsumer()
+    # handeller function
+    def chat_message(self, event):
+        self.send({
+            'type': 'websocket.send',
+            'text': event['message'],
+        })
+    
+    def websocket_disconnect(self, event):
+        print("WS Disconnected...", event)
+        async_to_sync(self.channel_layer.group_discard)(self.group_name, self.channel_name)
+        raise StopConsumer()
+
+# Async Consumer 
+class MyAsyncConsumer(AsyncConsumer):
+    async def websocket_connect(self, event):
+        print("WS connected...", event)
+        self.group_name = self.scope['url_route']['kwargs']['gname']
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        await self.send({
+            'type': 'websocket.accept',
+        })
+
+    async def websocket_receive(self, event):
+        print("Message received from client.", event)
+        data = json.loads(event['text'])
+        # find the group
+        group = await database_sync_to_async(Group.objects.get)(name=self.group_name)
+        if self.scope['user'].is_authenticated:
+            # create a chat
+            chat = await database_sync_to_async(Chat.objects.create)(content=data['msg'], group=group)
+            data['user'] = self.scope['user'].username
+            await self.channel_layer.group_send(self.group_name, {
+                'type': 'chat.message',
+                'message': json.dumps(data)
+            })
+        else:
+            await self.send({
+                'type': 'websocket.send',
+                'text': json.dumps({'msg':'You are not authenticated.', 'user':'Anonymous'})
+            })
+            raise StopConsumer()
+        
+    # handeller function
+    async def chat_message(self, event):
+        await self.send({
+            'type': 'websocket.send',
+            'text': event['message']
+        })
+    
+    async def websocket_disconnect(self, event):
+        print("WS Disconnected...", event)
+        await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        raise StopConsumer()
+
 
 
 # WebsocketConsumer
