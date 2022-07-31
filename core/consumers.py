@@ -63,8 +63,10 @@ class MyAsyncWebsocketConsumer(AsyncWebsocketConsumer):
         # find the group
         group = await database_sync_to_async(Group.objects.get)(name=self.group_name)
         if self.scope['user'].is_authenticated:
-            # create a chat
-            chat = await database_sync_to_async(Chat.objects.create)(content=data['msg'], group=group)
+            # get user
+            user_obj = await database_sync_to_async(User.objects.get)(username=self.scope['user'].username)
+            # save chat
+            chat = await database_sync_to_async(Chat.objects.create)(content=data['msg'], group=group, user=user_obj)
             data['user'] = self.scope['user'].username
             await self.channel_layer.group_send(self.group_name, {
                     'type': 'chat.message',
