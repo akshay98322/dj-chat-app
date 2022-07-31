@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-    {% load static %}
+    <!-- {% load static %} -->
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat UI</title>
-    <link rel="stylesheet" href="style.css" >
-    <link rel="stylesheet" href="{% static 'core/style.css' %}">
+    <!-- <link rel="stylesheet" href="style.css" > -->
+    <!-- <link rel="stylesheet" href="{% static 'core/style.css' %}"> -->
 </head>
 <body>
     <!-- <div class="container">
@@ -36,7 +36,7 @@
     <h1>Group Name: {{groupname}}</h1>
     <textarea id="chat-log" cols="100" rows="20">
         {% for chat in chats %}
-            {{ chat.user }}:- {{ chat.content }}
+            {{chat.user}}:- {{ chat.content }}
         {% endfor %}
     </textarea>
     <input type="text" id="chat-message-input" size="100"> <br>
@@ -44,15 +44,17 @@
     {{groupname|json_script:"group-name"}}
     <script>
         const groupName = JSON.parse(document.getElementById("group-name").textContent);
-        var ws = new WebSocket("ws://" + window.location.host + "/ws/wsc/" + groupName + "/");
+        // web socket connection
+        // var ws = new WebSocket("ws://" + window.location.host + "/ws/wsc/" + groupName + "/");
         // var ws = new WebSocket("ws://" + window.location.host + "/ws/awsc/" + groupName + "/");
+        // json socket connection
+        var ws = new WebSocket("ws://" + window.location.host + "/ws/jwc/" + groupName + "/");
 
         ws.onopen = function(event) {
             console.log("Connected to server");
         };
         ws.onmessage = function(event) {
             const data = JSON.parse(event.data);
-            console.log(data.msg)
             document.querySelector('#chat-log').value += data.user + ":- " + data.msg + '\n'
         };
         ws.onclose = function(event) {
