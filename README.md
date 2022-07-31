@@ -37,7 +37,7 @@ Create DB and Tables
   python manage.py migrate
 ```
 
-Create DB and Tables
+Create admin/super user
 
 ```bash
   python manage.py createsuperuser
