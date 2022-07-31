@@ -71,14 +71,17 @@ class MyAsyncConsumer(AsyncConsumer):
         })
 
     async def websocket_receive(self, event):
-        print("Message received from client.", event)
-        data = json.loads(event['text'])
-        # find the group
-        group = await database_sync_to_async(Group.objects.get)(name=self.group_name)
         if self.scope['user'].is_authenticated:
-            # create a chat
-            chat = await database_sync_to_async(Chat.objects.create)(content=data['msg'], group=group)
-            data['user'] = self.scope['user'].username
+            data = json.loads(event['text'])
+            # find the group
+            group = await database_sync_to_async(Group.objects.get)(name=self.group_name)
+            # get user
+            u_name = self.scope['user'].username
+            user_obj = await database_sync_to_async(User.objects.get)(username=u_name)
+            # save chat
+            message = data['msg']
+            chat = await database_sync_to_async(Chat.objects.create)(content=message, group=group, user=user_obj)
+            data['user'] = u_name
             await self.channel_layer.group_send(self.group_name, {
                 'type': 'chat.message',
                 'message': json.dumps(data)
