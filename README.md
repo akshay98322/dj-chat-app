@@ -1,5 +1,5 @@
 # dj-chat-app
-This is a basic Chat App using Websocket and AsyncWebsocket.
+This is a basic Chat App using SyncConsumer, AsyncConsumer, Websocket, AsyncWebsocket, JsonWebsocketConsumer and AsyncJsonWebsocketConsumer.
 
 ## Installation
 
@@ -15,7 +15,7 @@ Install Python 3.9.0
 Clone the project
 
 ```bash
-  git clone https://github.com/akshay98322/dj-chat-app-with-generic-consumer.git
+  git clone https://github.com/akshay98322/dj-chat-app.git
 ```
 
 Go to the project directory
