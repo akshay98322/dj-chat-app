@@ -4,6 +4,7 @@ from asgiref.sync import async_to_sync
 import json
 from .models import Group, Chat
 from channels.db import database_sync_to_async
+from django.contrib.auth.models import User
 
 
 # WebsocketConsumer
@@ -19,8 +20,10 @@ class MyWebsocketConsumer(WebsocketConsumer):
         # find the group
         group = Group.objects.get(name=self.group_name)
         if self.scope['user'].is_authenticated:
+            # get user
+            user_obj = User.objects.get(username=self.scope['user'].username)
             # save chat
-            chat = Chat.objects.create(content=data['msg'], group=group)
+            chat = Chat.objects.create(content=data['msg'], group=group, user=user_obj)
             data['user'] = self.scope['user'].username
             async_to_sync(self.channel_layer.group_send)(self.group_name, {
                     'type': 'chat.message',
