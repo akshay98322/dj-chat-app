@@ -56,5 +56,12 @@ Start the server
   python manage.py runserver
 ```
 
+Start the asgi server with gunicorn and uvicorn
 
+```bash
+  gunicorn --bind 0.0.0.0:8000 chat_project.asgi -w 4 -k uvicorn.workers.UvicornWorker
+```
 
+#### Note
+
+Running the app using gunicorn and uvicorn is possible only on Linux Environment.
